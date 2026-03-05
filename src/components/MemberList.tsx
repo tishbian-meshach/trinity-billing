@@ -14,9 +14,21 @@ interface Member {
 }
 
 export default function MemberList({ members }: { members: Member[] }) {
+  // Sort members numerically by family pseudo-ID
+  const sorted = [...members].sort((a, b) => {
+    const aName = a.family.familyName || '0';
+    const bName = b.family.familyName || '0';
+    const aNum = parseInt(aName);
+    const bNum = parseInt(bName);
+    if (!isNaN(aNum) && !isNaN(bNum) && !isNaN(Number(aName)) && !isNaN(Number(bName))) {
+      return aNum - bNum;
+    }
+    return aName.localeCompare(bName);
+  });
+
   return (
     <div className="space-y-3 stagger-children">
-      {members.map((member) => (
+      {sorted.map((member) => (
         <div key={member.id} className="glass-card p-5 hover:border-[#6c5ce7]/30 transition-all duration-200">
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-4 flex-1 min-w-0">
