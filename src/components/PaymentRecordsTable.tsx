@@ -160,7 +160,6 @@ export default function PaymentRecordsTable({ families, billingYear }: Props) {
       tableRows += `<tr class="family-row">
         <td colspan="${colspanFamily}" style="font-weight:700; background:#f3f0ff; padding:8px 12px; font-size:13px;">
           ${family.familyName || 'Unnamed Family'}
-          <span style="float:right; color:#00875a;">₹${familyTotal.toLocaleString()}</span>
         </td>
       </tr>`;
 
