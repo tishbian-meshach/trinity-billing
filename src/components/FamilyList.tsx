@@ -1,9 +1,8 @@
 'use client';
 
-import { updateFamily, deleteFamily } from '@/lib/actions';
+import { deleteFamily } from '@/lib/actions';
 import Link from 'next/link';
 import DeleteButton from '@/components/DeleteButton';
-import InlineEdit from '@/components/InlineEdit';
 
 interface Family {
   id: string;
