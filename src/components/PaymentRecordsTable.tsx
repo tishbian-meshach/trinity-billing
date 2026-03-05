@@ -523,9 +523,11 @@ export default function PaymentRecordsTable({ families, billingYear }: Props) {
                                         ))}
                                       </select>
                                       <input
-                                        type="number"
+                                        type="text"
+                                        inputMode="numeric"
+                                        pattern="[0-9]*"
                                         value={editAmount}
-                                        onChange={(e) => setEditAmount(parseInt(e.target.value) || 0)}
+                                        onChange={(e) => setEditAmount(parseInt(e.target.value.replace(/[^0-9]/g, '')) || 0)}
                                         className="!w-16 !py-0.5 !px-1 !text-xs !rounded-md !bg-[#0a0a0f] !border-[#2a2a40]"
                                       />
                                       <button

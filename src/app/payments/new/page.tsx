@@ -306,7 +306,7 @@ export default function NewPaymentPage() {
 
           <div>
             <label htmlFor="amount">Amount (₹) *</label>
-            <input type="number" id="amount" name="amount" placeholder="Enter amount" min="1" required />
+            <input type="text" inputMode="numeric" pattern="[1-9][0-9]*" id="amount" name="amount" placeholder="Enter amount" required />
           </div>
         </div>
 
