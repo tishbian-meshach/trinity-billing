@@ -42,23 +42,15 @@ export default function FamilyList({ families }: { families: Family[] }) {
               <div className="flex items-center justify-between">
                 <div className="flex items-center gap-4 flex-1 min-w-0">
                   <Link href={`/families/${family.id}`}>
-                    <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-[#6c5ce7]/20 to-[#a29bfe]/20 
+                    <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-[#6c5ce7]/20 to-[#a29bfe]/20 
                                     flex items-center justify-center group-hover/card:scale-105 transition-transform flex-shrink-0">
-                      <span className="text-sm font-bold text-[#a29bfe]">
-                        {(family.familyName || 'F')[0].toUpperCase()}
+                      <span className="text-lg font-bold text-[#a29bfe]">
+                        {family.familyName || '?'}
                       </span>
                     </div>
                   </Link>
-                  <div className="min-w-0 flex-1 flex items-center gap-1.5">
-                    <span className="text-sm font-medium text-[#8888a0]">Family ID:</span>
-                    <InlineEdit
-                      value={family.familyName || 'Unnamed'}
-                      onSave={async (newName) => {
-                        await updateFamily(family.id, newName);
-                      }}
-                      className="font-medium text-white"
-                    />
-                    <p className="text-xs text-[#8888a0] mt-0.5">
+                  <div className="min-w-0 flex-1">
+                    <p className="font-medium text-white">
                       {family._count.members} member{family._count.members !== 1 ? 's' : ''}
                     </p>
                   </div>

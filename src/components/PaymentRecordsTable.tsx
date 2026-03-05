@@ -429,14 +429,13 @@ export default function PaymentRecordsTable({ families, billingYear }: Props) {
             {/* Family header */}
             <div className="px-5 py-3 bg-[#6c5ce7]/8 border-b border-[#2a2a40] flex items-center justify-between">
               <div className="flex items-center gap-3">
-                <div className="w-8 h-8 rounded-lg bg-[#6c5ce7]/20 flex items-center justify-center">
-                  <span className="text-xs font-bold text-[#a29bfe]">
-                    {(family.familyName || 'F')[0].toUpperCase()}
+                <div className="w-10 h-10 rounded-xl bg-[#6c5ce7]/20 flex items-center justify-center">
+                  <span className="text-sm font-bold text-[#a29bfe]">
+                    {family.familyName || '?'}
                   </span>
                 </div>
                 <div>
-                  <h3 className="font-medium text-white text-sm">Family ID: {family.familyName || 'Unnamed'}</h3>
-                  <p className="text-xs text-[#8888a0]">{family.members.length} member(s)</p>
+                  <p className="font-medium text-white text-sm">{family.members.length} member(s)</p>
                 </div>
               </div>
               <div className="text-right">
