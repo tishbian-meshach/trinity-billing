@@ -103,11 +103,16 @@ export default function PaymentRecordsTable({ families, billingYear }: Props) {
   });
 
   let grandTotal = 0;
+  let monthTotal = 0;
   let totalMembersShown = 0;
   filteredFamilies.forEach((f) => {
     totalMembersShown += f.members.length;
     f.members.forEach((m) => {
       grandTotal += memberYearTotals[m.id] || 0;
+      // Sum only the filtered month's payments
+      m.payments.forEach((p) => {
+        monthTotal += p.amount;
+      });
     });
   });
 
@@ -421,7 +426,7 @@ export default function PaymentRecordsTable({ families, billingYear }: Props) {
             <p className="text-xs text-[#8888a0]">
               {selectedMonth !== 0 ? `${tamilMonths[selectedMonth]} Collection` : 'Total Collected'}
             </p>
-            <p className="text-lg font-bold text-[#00b894]">₹{grandTotal.toLocaleString()}</p>
+            <p className="text-lg font-bold text-[#00b894]">₹{(selectedMonth !== 0 ? monthTotal : grandTotal).toLocaleString()}</p>
           </div>
         </div>
       </div>
