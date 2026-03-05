@@ -57,7 +57,7 @@ export default function PaymentRecordsTable({ families, billingYear }: Props) {
   const [editAmount, setEditAmount] = useState(0);
   const [loading, setLoading] = useState(false);
   const [selectedMonth, setSelectedMonth] = useState(0);
-  const [hideNoPayments, setHideNoPayments] = useState(false);
+  const [hideNoPayments, setHideNoPayments] = useState(true);
   const [monthDropdownOpen, setMonthDropdownOpen] = useState(false);
 
   // Filter logic

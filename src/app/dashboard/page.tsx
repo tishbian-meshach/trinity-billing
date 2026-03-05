@@ -1,18 +1,45 @@
-import { getDashboardStats } from '@/lib/actions';
+import { getDashboardStats, getBillingYears } from '@/lib/actions';
 import Link from 'next/link';
 
 export const dynamic = 'force-dynamic';
 
-export default async function DashboardPage() {
-  const stats = await getDashboardStats();
+export default async function DashboardPage({
+  searchParams,
+}: {
+  searchParams: { billingYearId?: string };
+}) {
+  const billingYears = await getBillingYears();
+  const selectedBillingYearId = searchParams.billingYearId || (billingYears.length > 0 ? billingYears[0].id : undefined);
+
+  const stats = await getDashboardStats(selectedBillingYearId);
 
   return (
     <div className="max-w-6xl mx-auto fade-in">
       {/* Header */}
-      <div className="mb-8">
+      <div className="mb-6">
         <h1 className="text-2xl md:text-3xl font-bold gradient-text">Dashboard</h1>
         <p className="text-[#8888a0] mt-1 text-sm">Overview of church billing</p>
       </div>
+
+      {/* Billing Year Selector */}
+      {billingYears.length > 0 && (
+        <div className="flex gap-2 mb-8 overflow-x-auto pb-2 custom-scrollbar">
+          {billingYears.map((by) => (
+            <Link
+              key={by.id}
+              href={`/dashboard?billingYearId=${by.id}`}
+              className={`px-4 py-2 rounded-xl text-sm font-medium whitespace-nowrap transition-all duration-200
+                ${
+                  by.id === selectedBillingYearId
+                    ? 'bg-[#6c5ce7] text-white shadow-lg shadow-[#6c5ce7]/25'
+                    : 'bg-[#1a1a2e] text-[#8888a0] hover:text-white hover:bg-[#1f1f35] border border-[#2a2a40]'
+                }`}
+            >
+              {by.name}
+            </Link>
+          ))}
+        </div>
+      )}
 
       {/* Stats Cards */}
       <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 mb-8 stagger-children">

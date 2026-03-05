@@ -256,15 +256,19 @@ export async function getPaymentsByBillingYear(billingYearId: string) {
 
 // ============ DASHBOARD STATS ============
 
-export async function getDashboardStats() {
+export async function getDashboardStats(billingYearId?: string) {
+  const paymentFilter = billingYearId ? { billingYearId } : {};
+
   const [totalFamilies, totalMembers, currentYearCollections, recentPayments] =
     await Promise.all([
       prisma.family.count(),
       prisma.member.count(),
       prisma.payment.aggregate({
+        where: paymentFilter,
         _sum: { amount: true },
       }),
       prisma.payment.findMany({
+        where: paymentFilter,
         take: 10,
         orderBy: { createdAt: 'desc' },
         include: {
