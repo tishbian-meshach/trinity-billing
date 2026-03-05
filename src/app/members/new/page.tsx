@@ -101,6 +101,7 @@ function NewMemberForm() {
               rows={3}
               required
               className="resize-none"
+              defaultValue="பண்டாரம்பட்டி"
             />
           </div>
 
