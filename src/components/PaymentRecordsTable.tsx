@@ -150,10 +150,6 @@ export default function PaymentRecordsTable({ families, billingYear }: Props) {
     let tableRows = '';
     let sno = 1;
     filteredFamilies.forEach((family) => {
-      let familyTotal = 0;
-      family.members.forEach((m) => {
-        m.payments.forEach((p) => { familyTotal += p.amount; });
-      });
 
       // Family header row
       const colspanFamily = selectedMonth !== 0 ? '5' : '4';
