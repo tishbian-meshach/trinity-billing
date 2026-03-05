@@ -79,8 +79,17 @@ export default function FamilyDetail({ family }: { family: Family }) {
                   />
                   <p className="text-xs text-[#8888a0] mt-0.5">{member.mobile}</p>
                 </div>
-                <div className="text-right flex-shrink-0">
+                <div className="text-right flex-shrink-0 flex items-center gap-4">
                   <p className="text-xs text-[#8888a0]">{member.address}</p>
+                  <Link
+                    href={`/members/${member.id}/edit`}
+                    className="p-2 text-[#8888a0] hover:text-[#6c5ce7] rounded-xl hover:bg-[#6c5ce7]/10 transition-colors"
+                    title="Edit member"
+                  >
+                    <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
+                    </svg>
+                  </Link>
                 </div>
               </div>
             </div>

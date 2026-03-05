@@ -76,7 +76,7 @@ export async function createMember(formData: FormData) {
   revalidatePath(`/families/${familyId}`);
 }
 
-export async function updateMember(id: string, data: { name?: string; address?: string; mobile?: string }) {
+export async function updateMember(id: string, data: { name?: string; address?: string; mobile?: string; familyId?: string }) {
   await prisma.member.update({
     where: { id },
     data,
@@ -84,6 +84,12 @@ export async function updateMember(id: string, data: { name?: string; address?: 
 
   revalidatePath('/members');
   revalidatePath('/families');
+}
+
+export async function getMemberById(id: string) {
+  return prisma.member.findUnique({
+    where: { id },
+  });
 }
 
 export async function getMembers(search?: string) {

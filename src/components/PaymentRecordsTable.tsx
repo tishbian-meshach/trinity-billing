@@ -27,6 +27,12 @@ interface Family {
 
 interface Props {
   families: Family[];
+  billingYear?: {
+    startMonth: number;
+    startYear: number;
+    endMonth: number;
+    endYear: number;
+  } | null;
 }
 
 const monthFilters = [
@@ -45,7 +51,7 @@ const monthFilters = [
   { value: 12, label: 'Dec - டிசம்பர்' },
 ];
 
-export default function PaymentRecordsTable({ families }: Props) {
+export default function PaymentRecordsTable({ families, billingYear }: Props) {
   const [editingPayment, setEditingPayment] = useState<string | null>(null);
   const [editMonth, setEditMonth] = useState(0);
   const [editAmount, setEditAmount] = useState(0);
@@ -132,7 +138,13 @@ export default function PaymentRecordsTable({ families }: Props) {
     if (selectedMonth !== 0) {
       filterParts.push(`மாதம்: ${tamilMonths[selectedMonth]}`);
     }
-    const filterText = filterParts.length > 0 ? filterParts.join(' | ') : 'அனைத்து மாதங்கள்';
+    
+    let defaultFilterText = 'அனைத்து மாதங்கள்';
+    if (billingYear) {
+      defaultFilterText = `${tamilMonths[billingYear.startMonth]} ${billingYear.startYear} - ${tamilMonths[billingYear.endMonth]} ${billingYear.endYear}`;
+    }
+
+    const filterText = filterParts.length > 0 ? filterParts.join(' | ') : defaultFilterText;
 
     // Build table rows
     let tableRows = '';

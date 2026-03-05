@@ -3,6 +3,7 @@
 import { updateMember, deleteMember } from '@/lib/actions';
 import DeleteButton from '@/components/DeleteButton';
 import InlineEdit from '@/components/InlineEdit';
+import Link from 'next/link';
 
 interface Member {
   id: string;
@@ -42,7 +43,18 @@ export default function MemberList({ members }: { members: Member[] }) {
             </div>
             <div className="flex items-center gap-2 flex-shrink-0">
               <span className="text-xs text-[#8888a0] hidden sm:block">{member.address}</span>
-              <DeleteButton id={member.id} action={deleteMember} label="member" />
+              <div className="flex items-center gap-1">
+                <Link
+                  href={`/members/${member.id}/edit`}
+                  className="p-2 text-[#8888a0] hover:text-[#6c5ce7] rounded-xl hover:bg-[#6c5ce7]/10 transition-colors"
+                  title="Edit member"
+                >
+                  <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
+                  </svg>
+                </Link>
+                <DeleteButton id={member.id} action={deleteMember} label="member" />
+              </div>
             </div>
           </div>
         </div>
