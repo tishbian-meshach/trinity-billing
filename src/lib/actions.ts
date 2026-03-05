@@ -152,6 +152,7 @@ export async function createPayment(formData: FormData) {
   const billingYearId = formData.get('billingYearId') as string;
   const month = parseInt(formData.get('month') as string);
   const amount = parseInt(formData.get('amount') as string);
+  const sendReceipt = formData.get('sendReceipt') === 'true';
 
   if (!memberId || !billingYearId || !month || !amount) {
     throw new Error('All fields are required');
@@ -184,21 +185,27 @@ export async function createPayment(formData: FormData) {
     throw new Error('Member not found');
   }
 
-  // Construct WhatsApp message
-  const tamilMonth = getTamilMonthName(month);
-  const message = `திரித்துவ ஆலயம், பண்டாரம்பட்டி\n\n${member.name}\n\n${tamilMonth} வரவு : ₹${amount}\n\nஇதுவரை மொத்த வரவு : ₹${totalPaid}`;
+  if (sendReceipt) {
+    // Construct WhatsApp message
+    const tamilMonth = getTamilMonthName(month);
+    const message = `தூய திரித்துவ ஆலயம், பண்டாரம்பட்டி\n\n${member.name}\n\n${tamilMonth} வரவு : ₹${amount}\n\nஇதுவரை மொத்த வரவு : ₹${totalPaid}`;
 
-  // Send WhatsApp message
-  try {
-    await sendWhatsApp(member.mobile, message);
-  } catch (error) {
-    console.error('WhatsApp send failed:', error);
+    // Send WhatsApp message
+    try {
+      await sendWhatsApp(member.mobile, message);
+    } catch (error) {
+      console.error('WhatsApp send failed:', error);
+    }
   }
 
   revalidatePath('/payments');
   revalidatePath('/dashboard');
 
-  return { success: true, totalPaid, message: 'Payment recorded and WhatsApp sent!' };
+  return {
+    success: true,
+    totalPaid,
+    message: sendReceipt ? 'Payment recorded and WhatsApp sent!' : 'Payment recorded successfully.'
+  };
 }
 
 export async function updatePayment(id: string, data: { month?: number; amount?: number }) {

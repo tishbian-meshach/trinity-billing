@@ -136,7 +136,12 @@ export default function PaymentRecordsTable({ families, billingYear }: Props) {
     // Build filter info text
     const filterParts: string[] = [];
     if (selectedMonth !== 0) {
-      filterParts.push(`மாதம்: ${tamilMonths[selectedMonth]}`);
+      let yearStr = '';
+      if (billingYear) {
+        const year = selectedMonth >= billingYear.startMonth ? billingYear.startYear : billingYear.endYear;
+        yearStr = ` ${year}`;
+      }
+      filterParts.push(`மாதம்: ${tamilMonths[selectedMonth]}${yearStr}`);
     }
     
     let defaultFilterText = 'அனைத்து மாதங்கள்';
@@ -152,7 +157,7 @@ export default function PaymentRecordsTable({ families, billingYear }: Props) {
     filteredFamilies.forEach((family) => {
 
       // Family header row
-      const colspanFamily = selectedMonth !== 0 ? '5' : '4';
+      const colspanFamily = selectedMonth !== 0 ? '4' : '3';
       tableRows += `<tr class="family-row">
         <td colspan="${colspanFamily}" style="font-weight:700; background:#f3f0ff; padding:8px 12px; font-size:13px;">
           ${family.familyName || 'Unnamed Family'}
@@ -162,7 +167,13 @@ export default function PaymentRecordsTable({ families, billingYear }: Props) {
       family.members.forEach((member) => {
         const memberTotal = member.payments.reduce((a, p) => a + p.amount, 0);
         const paymentsList = member.payments.length > 0
-          ? member.payments.map((p) => `${tamilMonths[p.month]}: ₹${p.amount}`).join(', ')
+          ? member.payments.map((p) => {
+              let pYear = '';
+              if (billingYear) {
+                pYear = ` ${p.month >= billingYear.startMonth ? billingYear.startYear : billingYear.endYear}`;
+              }
+              return `${tamilMonths[p.month]}${pYear}: ₹${p.amount}`;
+            }).join(', ')
           : '-';
 
         const paymentsColumn = selectedMonth !== 0 
@@ -172,7 +183,6 @@ export default function PaymentRecordsTable({ families, billingYear }: Props) {
         tableRows += `<tr>
           <td style="padding:6px 12px; border-bottom:1px solid #e5e5e5; text-align:center; font-size:12px;">${sno++}</td>
           <td style="padding:6px 12px; border-bottom:1px solid #e5e5e5; font-size:12px;">${member.name}</td>
-          <td style="padding:6px 12px; border-bottom:1px solid #e5e5e5; font-size:12px;">${member.mobile}</td>
           ${paymentsColumn}
           <td style="padding:6px 12px; border-bottom:1px solid #e5e5e5; text-align:right; font-weight:600; font-size:12px;">₹${memberTotal.toLocaleString()}</td>
         </tr>`;
@@ -221,7 +231,6 @@ export default function PaymentRecordsTable({ families, billingYear }: Props) {
       <tr>
         <th>வ.எண்</th>
         <th>உறுப்பினர்</th>
-        <th>தொலைபேசி</th>
         ${selectedMonth !== 0 ? '<th>செலுத்தியவை</th>' : ''}
         <th style="text-align:right;">மொத்தம்</th>
       </tr>
@@ -229,7 +238,7 @@ export default function PaymentRecordsTable({ families, billingYear }: Props) {
     <tbody>${tableRows}</tbody>
     <tfoot>
       <tr>
-        <td colspan="${selectedMonth !== 0 ? '4' : '3'}" style="text-align:right; padding-right:12px;">மொத்த வரவு</td>
+        <td colspan="${selectedMonth !== 0 ? '3' : '2'}" style="text-align:right; padding-right:12px;">மொத்த வரவு</td>
         <td style="text-align:right;">₹${grandTotal.toLocaleString()}</td>
       </tr>
     </tfoot>
