@@ -94,14 +94,20 @@ export default function PaymentRecordsTable({ families, billingYear }: Props) {
 
   const filteredFamilies = getFilteredData() || [];
 
+  // Build a lookup of full billing year totals per member (unfiltered)
+  const memberYearTotals: Record<string, number> = {};
+  families.forEach((f) => {
+    f.members.forEach((m) => {
+      memberYearTotals[m.id] = m.payments.reduce((acc, p) => acc + p.amount, 0);
+    });
+  });
+
   let grandTotal = 0;
   let totalMembersShown = 0;
   filteredFamilies.forEach((f) => {
     totalMembersShown += f.members.length;
     f.members.forEach((m) => {
-      m.payments.forEach((p) => {
-        grandTotal += p.amount;
-      });
+      grandTotal += memberYearTotals[m.id] || 0;
     });
   });
 
@@ -175,7 +181,7 @@ export default function PaymentRecordsTable({ families, billingYear }: Props) {
       </tr>`;
 
       family.members.forEach((member) => {
-        const memberTotal = member.payments.reduce((a, p) => a + p.amount, 0);
+        const memberTotal = memberYearTotals[member.id] || 0;
         const paymentsList = member.payments.length > 0
           ? member.payments.map((p) => {
               let pYear = '';
@@ -421,9 +427,7 @@ export default function PaymentRecordsTable({ families, billingYear }: Props) {
       {filteredFamilies.map((family) => {
         let familyTotal = 0;
         family.members.forEach((m) => {
-          m.payments.forEach((p) => {
-            familyTotal += p.amount;
-          });
+          familyTotal += memberYearTotals[m.id] || 0;
         });
 
         return (
@@ -465,7 +469,7 @@ export default function PaymentRecordsTable({ families, billingYear }: Props) {
                 </thead>
                 <tbody>
                   {family.members.map((member) => {
-                    const memberTotal = member.payments.reduce((acc, p) => acc + p.amount, 0);
+                    const memberTotal = memberYearTotals[member.id] || 0;
 
                     return (
                       <tr key={member.id} className="border-b border-[#2a2a40]/50 hover:bg-[#1f1f35]/30 transition-colors">
