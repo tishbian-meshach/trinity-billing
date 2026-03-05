@@ -1,0 +1,48 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model Family {
+  id         String   @id @default(uuid())
+  familyName String?
+  createdAt  DateTime @default(now())
+  members    Member[]
+}
+
+model Member {
+  id        String    @id @default(uuid())
+  name      String
+  address   String
+  mobile    String
+  familyId  String
+  family    Family    @relation(fields: [familyId], references: [id], onDelete: Cascade)
+  payments  Payment[]
+  createdAt DateTime  @default(now())
+}
+
+model BillingYear {
+  id         String    @id @default(uuid())
+  name       String
+  startMonth Int
+  startYear  Int
+  endMonth   Int
+  endYear    Int
+  payments   Payment[]
+  createdAt  DateTime  @default(now())
+}
+
+model Payment {
+  id            String      @id @default(uuid())
+  memberId      String
+  member        Member      @relation(fields: [memberId], references: [id], onDelete: Cascade)
+  billingYearId String
+  billingYear   BillingYear @relation(fields: [billingYearId], references: [id], onDelete: Cascade)
+  month         Int
+  amount        Int
+  createdAt     DateTime    @default(now())
+}
