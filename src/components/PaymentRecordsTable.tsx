@@ -220,7 +220,9 @@ export default function PaymentRecordsTable({ families, billingYear }: Props) {
     thead th:last-child { text-align: right; }
     .family-row td { border-top: 2px solid #ddd; }
     tfoot td { background: #333; color: white; padding: 8px 12px; font-weight: 700; font-size: 13px; }
-    @media print { body { -webkit-print-color-adjust: exact; print-color-adjust: exact; } }
+    tfoot { display: table-row-group; }
+    thead { display: table-header-group; }
+    @media print { body { -webkit-print-color-adjust: exact; print-color-adjust: exact; } tfoot { display: table-row-group; } }
   </style>
 </head>
 <body>
