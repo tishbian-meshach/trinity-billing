@@ -170,7 +170,7 @@ export default function PaymentRecordsTable({ families, billingYear }: Props) {
       const colspanFamily = selectedMonth !== 0 ? '4' : '3';
       tableRows += `<tr class="family-row">
         <td colspan="${colspanFamily}" style="font-weight:700; background:#f3f0ff; padding:8px 12px; font-size:13px;">
-          Family ID: ${family.familyName || 'Unnamed'}
+         ${family.familyName || 'Unnamed'}
         </td>
       </tr>`;
 

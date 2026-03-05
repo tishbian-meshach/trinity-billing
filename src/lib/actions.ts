@@ -98,7 +98,7 @@ export async function getMembers(search?: string) {
       ? {
           OR: [
             { name: { contains: search, mode: 'insensitive' } },
-            { mobile: { contains: search, mode: 'insensitive' } },
+            { family: { familyName: { contains: search, mode: 'insensitive' } } },
           ],
         }
       : undefined,

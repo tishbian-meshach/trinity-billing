@@ -37,7 +37,7 @@ export default function SearchBar({ defaultValue = '' }: SearchBarProps) {
         type="text"
         value={search}
         onChange={(e) => setSearch(e.target.value)}
-        placeholder="Search by name or mobile..."
+        placeholder="Search by member or family ID..."
         className="!pl-11"
         id="member-search"
       />
