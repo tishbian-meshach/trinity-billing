@@ -87,7 +87,6 @@ export default function NewPaymentPage() {
   const filteredMembers = members.filter(
     (m) =>
       m.name.toLowerCase().includes(searchMember.toLowerCase()) ||
-      m.mobile.includes(searchMember) ||
       (m.family.familyName && m.family.familyName.toLowerCase().includes(searchMember.toLowerCase()))
   );
 
@@ -205,7 +204,7 @@ export default function NewPaymentPage() {
                     setMemberDropdownOpen(true);
                   }}
                   onFocus={() => setMemberDropdownOpen(true)}
-                  placeholder="Search by name, mobile, or family..."
+                  placeholder="Search by member name or family name..."
                   className="!pl-11"
                 />
               </div>
