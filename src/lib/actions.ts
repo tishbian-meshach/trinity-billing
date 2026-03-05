@@ -105,7 +105,7 @@ export async function getMembers(search?: string) {
     include: {
       family: true,
     },
-    orderBy: { createdAt: 'desc' },
+    orderBy: { family: { familyName: 'asc' } },
   });
 }
 
