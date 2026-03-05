@@ -156,7 +156,7 @@ export default function NewPaymentPage() {
 
       <form onSubmit={handleSubmit} className="space-y-6">
         {/* Member Selection Card */}
-        <div className="glass-card p-5">
+        <div className="glass-card p-5 relative z-30">
           <label className="text-sm font-medium text-[#8888a0] mb-3 block">Select Member *</label>
 
           {/* Selected member display */}
@@ -251,7 +251,7 @@ export default function NewPaymentPage() {
         </div>
 
         {/* Payment Details Card */}
-        <div className="glass-card p-5 space-y-4">
+        <div className="glass-card p-5 space-y-4 relative z-20">
           <h3 className="text-sm font-medium text-white">Payment Details</h3>
 
           <CustomDropdown
