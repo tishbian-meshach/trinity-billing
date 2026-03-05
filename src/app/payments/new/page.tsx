@@ -270,17 +270,39 @@ export default function NewPaymentPage() {
             id="billingYearId"
           />
 
-          <CustomDropdown
-            options={monthOptions}
-            value={selectedMonth}
-            onChange={setSelectedMonth}
-            placeholder="Select month"
-            label="Month"
-            required
-            searchable
-            name="month"
-            id="month"
-          />
+          <div>
+            <label className="text-sm font-medium text-[#8888a0] mb-2 block">Month *</label>
+            <div className="grid grid-cols-2 md:grid-cols-3 gap-2">
+              {monthOptions.map((opt) => {
+                const [en, ta] = opt.label.split(' - ');
+                return (
+                  <button
+                    key={opt.value}
+                    type="button"
+                    onClick={() => setSelectedMonth(opt.value)}
+                    className={`px-3 py-2.5 rounded-xl border text-sm transition-all duration-200 text-left relative overflow-hidden group
+                      ${selectedMonth === opt.value
+                        ? 'bg-[#6c5ce7]/15 border-[#6c5ce7] shadow-[0_4px_20px_rgba(108,92,231,0.15)] ring-1 ring-[#6c5ce7]'
+                        : 'bg-[#12121a] border-[#2a2a40] hover:border-[#555570] hover:bg-[#1f1f35]'
+                      }`}
+                  >
+                    {/* Active State Indicator Dot */}
+                    {selectedMonth === opt.value && (
+                      <div className="absolute top-2.5 right-2.5 w-1.5 h-1.5 rounded-full bg-[#a29bfe] shadow-[0_0_8px_#a29bfe]" />
+                    )}
+                    
+                    <span className={`block font-medium ${selectedMonth === opt.value ? 'text-[#a29bfe]' : 'text-[#f0f0f5] group-hover:text-white'}`}>
+                      {en}
+                    </span>
+                    <span className={`block text-xs mt-0.5 ${selectedMonth === opt.value ? 'text-[#a29bfe]/80' : 'text-[#8888a0] group-hover:text-[#a0a0b8]'}`}>
+                      {ta}
+                    </span>
+                  </button>
+                );
+              })}
+            </div>
+            <input type="hidden" name="month" value={selectedMonth} />
+          </div>
 
           <div>
             <label htmlFor="amount">Amount (₹) *</label>
