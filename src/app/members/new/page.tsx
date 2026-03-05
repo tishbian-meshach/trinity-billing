@@ -51,7 +51,8 @@ function NewMemberForm() {
 
   async function handleSubmit(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault();
-    const formData = new FormData(e.currentTarget);
+    const form = e.currentTarget;
+    const formData = new FormData(form);
     
     const name = formData.get('name') as string;
     const mobile = formData.get('mobile') as string;
@@ -68,9 +69,14 @@ function NewMemberForm() {
     try {
       await createMember(formData);
       toast.success('Member added successfully!');
-      router.push('/members');
+      // Reset form but keep the selected family for convenience
+      form.reset();
+      // Restore the default address value since form.reset clears it
+      const addressField = form.querySelector('#address') as HTMLTextAreaElement;
+      if (addressField) addressField.value = 'பண்டாரம்பட்டி';
     } catch {
       toast.error('Failed to add member');
+    } finally {
       setLoading(false);
     }
   }
@@ -89,6 +95,25 @@ function NewMemberForm() {
 
       <div className="glass-card p-6">
         <form onSubmit={handleSubmit} className="space-y-5">
+          <div>
+            {loadingFamilies ? (
+              <div className="flex items-center gap-2 py-3 text-sm text-[#8888a0]">
+                <span className="spinner" /> Loading families...
+              </div>
+            ) : (
+              <CustomDropdown
+                options={familyOptions}
+                value={selectedFamilyId}
+                onChange={setSelectedFamilyId}
+                placeholder="Select a family"
+                label="Family"
+                required
+                searchable
+                id="familyId"
+                name="familyId"
+              />
+            )}
+          </div>
           <div>
             <label htmlFor="name">Member Name *</label>
             <input type="text" id="name" name="name" placeholder="Enter full name" required />
@@ -112,25 +137,7 @@ function NewMemberForm() {
             <input type="tel" id="mobile" name="mobile" placeholder="e.g., 9876543210" required />
           </div>
 
-          <div>
-            {loadingFamilies ? (
-              <div className="flex items-center gap-2 py-3 text-sm text-[#8888a0]">
-                <span className="spinner" /> Loading families...
-              </div>
-            ) : (
-              <CustomDropdown
-                options={familyOptions}
-                value={selectedFamilyId}
-                onChange={setSelectedFamilyId}
-                placeholder="Select a family"
-                label="Family"
-                required
-                searchable
-                id="familyId"
-                name="familyId"
-              />
-            )}
-          </div>
+          
 
           <div className="flex gap-3 pt-2">
             <button

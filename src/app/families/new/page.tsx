@@ -11,15 +11,17 @@ export default function NewFamilyPage() {
 
   async function handleSubmit(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault();
-    const formData = new FormData(e.currentTarget);
+    const form = e.currentTarget;
+    const formData = new FormData(form);
 
     setLoading(true);
     try {
       await createFamily(formData);
       toast.success('Family created successfully!');
-      router.push('/families');
+      form.reset();
     } catch {
       toast.error('Failed to create family');
+    } finally {
       setLoading(false);
     }
   }
