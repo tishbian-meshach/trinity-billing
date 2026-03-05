@@ -446,7 +446,13 @@ export default function PaymentRecordsTable({ families, billingYear }: Props) {
 
             {/* Members table */}
             <div className="overflow-x-auto">
-              <table className="w-full">
+              <table className="w-full" style={{ tableLayout: 'fixed' }}>
+                <colgroup>
+                  <col style={{ width: '20%' }} />
+                  <col style={{ width: '15%' }} />
+                  <col style={{ width: '50%' }} />
+                  <col style={{ width: '15%' }} />
+                </colgroup>
                 <thead>
                   <tr className="border-b border-[#2a2a40]">
                     <th className="text-left px-5 py-2.5 text-xs font-medium text-[#8888a0] uppercase tracking-wider">Member</th>
@@ -467,7 +473,7 @@ export default function PaymentRecordsTable({ families, billingYear }: Props) {
                         <td className="px-5 py-3">
                           <p className="text-xs text-[#8888a0]">{member.mobile}</p>
                         </td>
-                        <td className="px-5 py-3">
+                        <td className="px-5 py-3 align-top">
                           {member.payments.length === 0 ? (
                             <span className="text-xs text-[#555570] italic">No payments</span>
                           ) : (
