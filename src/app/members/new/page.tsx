@@ -2,7 +2,7 @@
 
 import { createMember } from '@/lib/actions';
 import { useRouter, useSearchParams } from 'next/navigation';
-import { useState, useEffect } from 'react';
+import { useState, useEffect, Suspense } from 'react';
 import toast from 'react-hot-toast';
 import CustomDropdown from '@/components/CustomDropdown';
 
@@ -12,6 +12,21 @@ interface Family {
 }
 
 export default function NewMemberPage() {
+  return (
+    <Suspense fallback={
+      <div className="max-w-lg mx-auto fade-in">
+        <div className="mb-8">
+          <h1 className="text-2xl md:text-3xl font-bold gradient-text">Add Member</h1>
+          <p className="text-[#8888a0] mt-1 text-sm">Loading...</p>
+        </div>
+      </div>
+    }>
+      <NewMemberForm />
+    </Suspense>
+  );
+}
+
+function NewMemberForm() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const preselectedFamilyId = searchParams.get('familyId') || '';
