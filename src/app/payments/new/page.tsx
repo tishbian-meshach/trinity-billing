@@ -125,7 +125,6 @@ export default function NewPaymentPage() {
       }
     } catch {
       toast.error('Failed to record payment');
-    } finally {
       setLoading(false);
     }
   }

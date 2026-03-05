@@ -49,7 +49,10 @@ function NewMemberForm() {
       });
   }, []);
 
-  async function handleSubmit(formData: FormData) {
+  async function handleSubmit(e: React.FormEvent<HTMLFormElement>) {
+    e.preventDefault();
+    const formData = new FormData(e.currentTarget);
+    
     const name = formData.get('name') as string;
     const mobile = formData.get('mobile') as string;
     const address = formData.get('address') as string;
@@ -68,7 +71,6 @@ function NewMemberForm() {
       router.push('/members');
     } catch {
       toast.error('Failed to add member');
-    } finally {
       setLoading(false);
     }
   }
@@ -86,7 +88,7 @@ function NewMemberForm() {
       </div>
 
       <div className="glass-card p-6">
-        <form action={handleSubmit} className="space-y-5">
+        <form onSubmit={handleSubmit} className="space-y-5">
           <div>
             <label htmlFor="name">Member Name *</label>
             <input type="text" id="name" name="name" placeholder="Enter full name" required />

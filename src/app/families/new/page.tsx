@@ -9,7 +9,10 @@ export default function NewFamilyPage() {
   const router = useRouter();
   const [loading, setLoading] = useState(false);
 
-  async function handleSubmit(formData: FormData) {
+  async function handleSubmit(e: React.FormEvent<HTMLFormElement>) {
+    e.preventDefault();
+    const formData = new FormData(e.currentTarget);
+
     setLoading(true);
     try {
       await createFamily(formData);
@@ -17,7 +20,6 @@ export default function NewFamilyPage() {
       router.push('/families');
     } catch {
       toast.error('Failed to create family');
-    } finally {
       setLoading(false);
     }
   }
@@ -30,7 +32,7 @@ export default function NewFamilyPage() {
       </div>
 
       <div className="glass-card p-6">
-        <form action={handleSubmit} className="space-y-5">
+        <form onSubmit={handleSubmit} className="space-y-5">
           <div>
             <label htmlFor="familyName">Family Name</label>
             <input

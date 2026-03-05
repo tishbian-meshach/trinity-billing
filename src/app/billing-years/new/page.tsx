@@ -27,7 +27,10 @@ export default function NewBillingYearPage() {
   const [startMonth, setStartMonth] = useState('');
   const [endMonth, setEndMonth] = useState('');
 
-  async function handleSubmit(formData: FormData) {
+  async function handleSubmit(e: React.FormEvent<HTMLFormElement>) {
+    e.preventDefault();
+    const formData = new FormData(e.currentTarget);
+    
     const name = formData.get('name') as string;
     const startYear = formData.get('startYear') as string;
     const endYear = formData.get('endYear') as string;
@@ -47,7 +50,6 @@ export default function NewBillingYearPage() {
       router.push('/billing-years');
     } catch {
       toast.error('Failed to create billing year');
-    } finally {
       setLoading(false);
     }
   }
@@ -60,7 +62,7 @@ export default function NewBillingYearPage() {
       </div>
 
       <div className="glass-card p-6">
-        <form action={handleSubmit} className="space-y-5">
+        <form onSubmit={handleSubmit} className="space-y-5">
           <div>
             <label htmlFor="name">Billing Year Name *</label>
             <input type="text" id="name" name="name" placeholder="e.g., 2025-2026" required />
