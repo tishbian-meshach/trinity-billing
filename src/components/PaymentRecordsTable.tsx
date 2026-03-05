@@ -156,8 +156,9 @@ export default function PaymentRecordsTable({ families, billingYear }: Props) {
       });
 
       // Family header row
+      const colspanFamily = selectedMonth !== 0 ? '5' : '4';
       tableRows += `<tr class="family-row">
-        <td colspan="5" style="font-weight:700; background:#f3f0ff; padding:8px 12px; font-size:13px;">
+        <td colspan="${colspanFamily}" style="font-weight:700; background:#f3f0ff; padding:8px 12px; font-size:13px;">
           ${family.familyName || 'Unnamed Family'}
           <span style="float:right; color:#00875a;">₹${familyTotal.toLocaleString()}</span>
         </td>
@@ -169,11 +170,15 @@ export default function PaymentRecordsTable({ families, billingYear }: Props) {
           ? member.payments.map((p) => `${tamilMonths[p.month]}: ₹${p.amount}`).join(', ')
           : '-';
 
+        const paymentsColumn = selectedMonth !== 0 
+          ? `<td style="padding:6px 12px; border-bottom:1px solid #e5e5e5; font-size:12px;">${paymentsList}</td>`
+          : '';
+
         tableRows += `<tr>
           <td style="padding:6px 12px; border-bottom:1px solid #e5e5e5; text-align:center; font-size:12px;">${sno++}</td>
           <td style="padding:6px 12px; border-bottom:1px solid #e5e5e5; font-size:12px;">${member.name}</td>
           <td style="padding:6px 12px; border-bottom:1px solid #e5e5e5; font-size:12px;">${member.mobile}</td>
-          <td style="padding:6px 12px; border-bottom:1px solid #e5e5e5; font-size:12px;">${paymentsList}</td>
+          ${paymentsColumn}
           <td style="padding:6px 12px; border-bottom:1px solid #e5e5e5; text-align:right; font-weight:600; font-size:12px;">₹${memberTotal.toLocaleString()}</td>
         </tr>`;
       });
@@ -222,14 +227,14 @@ export default function PaymentRecordsTable({ families, billingYear }: Props) {
         <th>வ.எண்</th>
         <th>உறுப்பினர்</th>
         <th>தொலைபேசி</th>
-        <th>செலுத்தியவை</th>
+        ${selectedMonth !== 0 ? '<th>செலுத்தியவை</th>' : ''}
         <th style="text-align:right;">மொத்தம்</th>
       </tr>
     </thead>
     <tbody>${tableRows}</tbody>
     <tfoot>
       <tr>
-        <td colspan="4" style="text-align:right; padding-right:12px;">மொத்த வரவு</td>
+        <td colspan="${selectedMonth !== 0 ? '4' : '3'}" style="text-align:right; padding-right:12px;">மொத்த வரவு</td>
         <td style="text-align:right;">₹${grandTotal.toLocaleString()}</td>
       </tr>
     </tfoot>
