@@ -225,7 +225,9 @@ export default function PaymentRecordsTable({ families, billingYear }: Props) {
     thead th:first-child { text-align: center; width: 40px; }
     thead th:last-child { text-align: right; }
     .family-row td { border-top: 2px solid #ddd; }
-    tfoot td { background: #333; color: white; padding: 8px 12px; font-weight: 700; font-size: 13px; }
+    tfoot td { padding: 10px 12px; font-weight: 700; font-size: 13px; }
+    .month-total td { background: #6c5ce7; color: white; }
+    .year-total td { background: #333; color: white; }
     tfoot { display: table-row-group; }
     thead { display: table-header-group; }
     @media print { body { -webkit-print-color-adjust: exact; print-color-adjust: exact; } tfoot { display: table-row-group; } }
@@ -255,10 +257,28 @@ export default function PaymentRecordsTable({ families, billingYear }: Props) {
     </thead>
     <tbody>${tableRows}</tbody>
     <tfoot>
-      <tr>
-        <td colspan="${selectedMonth !== 0 ? '3' : '2'}" style="text-align:right; padding-right:12px;">மொத்த வரவு</td>
+      ${selectedMonth !== 0 ? (() => {
+        // Calculate month-specific total
+        let monthTotal = 0;
+        filteredFamilies.forEach((f) => {
+          f.members.forEach((m) => {
+            m.payments.forEach((p) => {
+              monthTotal += p.amount;
+            });
+          });
+        });
+        return `<tr class="month-total">
+          <td colspan="3" style="text-align:right; padding-right:12px;">${tamilMonths[selectedMonth]} மொத்தம்</td>
+          <td style="text-align:right;">₹${monthTotal.toLocaleString()}</td>
+        </tr>
+        <tr class="year-total">
+          <td colspan="3" style="text-align:right; padding-right:12px;">ஆண்டு மொத்த வரவு</td>
+          <td style="text-align:right;">₹${grandTotal.toLocaleString()}</td>
+        </tr>`;
+      })() : `<tr class="year-total">
+        <td colspan="2" style="text-align:right; padding-right:12px;">மொத்த வரவு</td>
         <td style="text-align:right;">₹${grandTotal.toLocaleString()}</td>
-      </tr>
+      </tr>`}
     </tfoot>
   </table>
 </body>
