@@ -61,8 +61,8 @@ export default function PaymentRecordsTable({ families, billingYear }: Props) {
   const [monthDropdownOpen, setMonthDropdownOpen] = useState(false);
 
   // Filter logic
-  function getFilteredData() {
-    return families
+  function getFilteredData(): Props['families'] {
+    const data = families
       .map((family) => {
         const filteredMembers = family.members
           .map((member) => {
@@ -80,9 +80,19 @@ export default function PaymentRecordsTable({ families, billingYear }: Props) {
         return { ...family, members: filteredMembers };
       })
       .filter((family) => family.members.length > 0);
+
+    // Sort families numerically using familyName (psuedo id)
+    return data.sort((a, b) => {
+      const aNum = parseInt(a.familyName || '0');
+      const bNum = parseInt(b.familyName || '0');
+      if (!isNaN(aNum) && !isNaN(bNum) && !isNaN(Number(a.familyName)) && !isNaN(Number(b.familyName))) {
+        return aNum - bNum;
+      }
+      return (a.familyName || '').localeCompare(b.familyName || '');
+    });
   }
 
-  const filteredFamilies = getFilteredData();
+  const filteredFamilies = getFilteredData() || [];
 
   let grandTotal = 0;
   let totalMembersShown = 0;
@@ -160,7 +170,7 @@ export default function PaymentRecordsTable({ families, billingYear }: Props) {
       const colspanFamily = selectedMonth !== 0 ? '4' : '3';
       tableRows += `<tr class="family-row">
         <td colspan="${colspanFamily}" style="font-weight:700; background:#f3f0ff; padding:8px 12px; font-size:13px;">
-          ${family.familyName || 'Unnamed Family'}
+          Family ID: ${family.familyName || 'Unnamed'}
         </td>
       </tr>`;
 
@@ -425,7 +435,7 @@ export default function PaymentRecordsTable({ families, billingYear }: Props) {
                   </span>
                 </div>
                 <div>
-                  <h3 className="font-medium text-white text-sm">{family.familyName || 'Unnamed Family'}</h3>
+                  <h3 className="font-medium text-white text-sm">Family ID: {family.familyName || 'Unnamed'}</h3>
                   <p className="text-xs text-[#8888a0]">{family.members.length} member(s)</p>
                 </div>
               </div>

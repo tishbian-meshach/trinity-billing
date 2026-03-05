@@ -12,6 +12,15 @@ interface Family {
 }
 
 export default function FamilyList({ families }: { families: Family[] }) {
+  const sortedFamilies = [...families].sort((a, b) => {
+    const aNum = parseInt(a.familyName || '0');
+    const bNum = parseInt(b.familyName || '0');
+    if (!isNaN(aNum) && !isNaN(bNum) && !isNaN(Number(a.familyName)) && !isNaN(Number(b.familyName))) {
+      return aNum - bNum;
+    }
+    return (a.familyName || '').localeCompare(b.familyName || '');
+  });
+
   return (
     <>
       {families.length === 0 ? (
@@ -28,7 +37,7 @@ export default function FamilyList({ families }: { families: Family[] }) {
         </div>
       ) : (
         <div className="space-y-3 stagger-children">
-          {families.map((family) => (
+          {sortedFamilies.map((family) => (
             <div key={family.id} className="glass-card p-5 hover:border-[#6c5ce7]/30 transition-all duration-200 group/card">
               <div className="flex items-center justify-between">
                 <div className="flex items-center gap-4 flex-1 min-w-0">
@@ -40,9 +49,10 @@ export default function FamilyList({ families }: { families: Family[] }) {
                       </span>
                     </div>
                   </Link>
-                  <div className="min-w-0 flex-1">
+                  <div className="min-w-0 flex-1 flex items-center gap-1.5">
+                    <span className="text-sm font-medium text-[#8888a0]">Family ID:</span>
                     <InlineEdit
-                      value={family.familyName || 'Unnamed Family'}
+                      value={family.familyName || 'Unnamed'}
                       onSave={async (newName) => {
                         await updateFamily(family.id, newName);
                       }}
