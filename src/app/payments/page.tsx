@@ -66,7 +66,6 @@ export default async function PaymentsPage({
       ) : (
         <PaymentRecordsTable 
           families={families} 
-          billingYearId={selectedBillingYearId}
         />
       )}
     </div>

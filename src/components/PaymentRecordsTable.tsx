@@ -27,7 +27,6 @@ interface Family {
 
 interface Props {
   families: Family[];
-  billingYearId: string;
 }
 
 const monthFilters = [
@@ -46,7 +45,7 @@ const monthFilters = [
   { value: 12, label: 'Dec - டிசம்பர்' },
 ];
 
-export default function PaymentRecordsTable({ families, billingYearId: _billingYearId }: Props) {
+export default function PaymentRecordsTable({ families }: Props) {
   const [editingPayment, setEditingPayment] = useState<string | null>(null);
   const [editMonth, setEditMonth] = useState(0);
   const [editAmount, setEditAmount] = useState(0);
