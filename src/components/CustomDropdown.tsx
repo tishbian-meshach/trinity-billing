@@ -64,7 +64,7 @@ export default function CustomDropdown({
   }, [isOpen, searchable]);
 
   return (
-    <div className="relative" ref={dropdownRef}>
+    <div className={`relative ${isOpen ? 'z-50' : 'z-10'}`} ref={dropdownRef}>
       {label && (
         <label className="text-sm font-medium text-[#8888a0] mb-1.5 block">
           {label} {required && '*'}
