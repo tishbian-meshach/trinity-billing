@@ -121,7 +121,13 @@ export default function NewPaymentPage() {
       const result = await createPayment(formData);
       if (result?.success) {
         toast.success(result.message || 'Payment recorded!');
-        router.push('/dashboard');
+        
+        // Reset form instead of redirecting
+        setSelectedMemberId('');
+        setSearchMember('');
+        setSelectedMonth('');
+        form.reset(); // Clear native form inputs like amount
+        setLoading(false);
       }
     } catch {
       toast.error('Failed to record payment');
