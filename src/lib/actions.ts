@@ -188,7 +188,7 @@ export async function createPayment(formData: FormData) {
   if (sendReceipt) {
     // Construct WhatsApp message
     const tamilMonth = getTamilMonthName(month);
-    const message = `தூய திரித்துவ ஆலயம், பண்டாரம்பட்டி\n\n${member.name}\n\n${tamilMonth} வரவு : ₹${amount}\n\nஇதுவரை மொத்த வரவு : ₹${totalPaid}`;
+    const message = `*தூய திரித்துவ ஆலயம்*\n*பண்டாரம்பட்டி*\n*சங்க காணிக்கை*\n\n${member.name}\n\n${tamilMonth} வரவு : ₹${amount}\n\nஇதுவரை மொத்த வரவு : ₹${totalPaid}`;
 
     // Send WhatsApp message
     try {
