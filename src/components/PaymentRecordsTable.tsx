@@ -274,7 +274,7 @@ export default function PaymentRecordsTable({ families, billingYear }: Props) {
         </div>
         <div class="family-info">
           <div>குடும்பத் தலைவர் பெயர்: <span class="family-leader-text">${familyLeader}</span></div>
-          <div>வரிசை எண்: ....................</div>
+          <div>வரிசை எண்: ${family.familyName || '....................'}</div>
           <div>முகவரி: <span class="family-leader-text">பண்டாரம்பட்டி</span></div>
         </div>
         <table>
