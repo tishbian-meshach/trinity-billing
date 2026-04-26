@@ -114,6 +114,19 @@ export async function deleteMember(id: string) {
   revalidatePath('/members');
 }
 
+export async function updateMemberOrder(memberIds: string[], familyId: string) {
+  const updates = memberIds.map((id, index) =>
+    prisma.member.update({
+      where: { id },
+      data: { order: index },
+    })
+  );
+
+  await Promise.all(updates);
+  revalidatePath(`/families/${familyId}`);
+  revalidatePath('/payments');
+}
+
 // ============ BILLING YEAR ACTIONS ============
 
 export async function createBillingYear(formData: FormData) {
@@ -245,7 +258,7 @@ export async function getPaymentsByBillingYear(billingYearId: string) {
             orderBy: { month: 'asc' },
           },
         },
-        orderBy: { name: 'asc' },
+        orderBy: { order: 'asc' },
       },
     },
     orderBy: { familyName: 'asc' },

@@ -1,7 +1,7 @@
 'use client';
 
-import { useState } from 'react';
-import { updatePayment, deletePayment } from '@/lib/actions';
+import { useState, useEffect } from 'react';
+import { updatePayment, deletePayment, updateMemberOrder } from '@/lib/actions';
 import { tamilMonths } from '@/lib/tamilMonths';
 import toast from 'react-hot-toast';
 
@@ -59,10 +59,16 @@ export default function PaymentRecordsTable({ families, billingYear }: Props) {
   const [selectedMonth, setSelectedMonth] = useState(0);
   const [hideNoPayments, setHideNoPayments] = useState(true);
   const [monthDropdownOpen, setMonthDropdownOpen] = useState(false);
+  const [draggedMember, setDraggedMember] = useState<{ memberId: string; familyId: string } | null>(null);
+  const [localFamilies, setLocalFamilies] = useState(families);
+
+  useEffect(() => {
+    setLocalFamilies(families);
+  }, [families]);
 
   // Filter logic
   function getFilteredData(): Props['families'] {
-    const data = families
+    const data = localFamilies
       .map((family) => {
         const filteredMembers = family.members
           .map((member) => {
@@ -96,7 +102,7 @@ export default function PaymentRecordsTable({ families, billingYear }: Props) {
 
   // Build a lookup of full billing year totals per member (unfiltered)
   const memberYearTotals: Record<string, number> = {};
-  families.forEach((f) => {
+  localFamilies.forEach((f) => {
     f.members.forEach((m) => {
       memberYearTotals[m.id] = m.payments.reduce((acc, p) => acc + p.amount, 0);
     });
@@ -145,7 +151,161 @@ export default function PaymentRecordsTable({ families, billingYear }: Props) {
     }
   }
 
-  const selectedMonthLabel = monthFilters.find((m) => m.value === selectedMonth)?.label || 'All Months';
+  function exportAnnualLedgerPDF() {
+    if (!billingYear) {
+      toast.error('No billing year selected');
+      return;
+    }
+
+    const printWindow = window.open('', '_blank');
+    if (!printWindow) {
+      toast.error('Please allow popups to export PDF');
+      return;
+    }
+
+    const monthsInYear: { month: number; year: number }[] = [];
+    let currentMonth = billingYear.startMonth;
+    let currentYear = billingYear.startYear;
+
+    let count = 0;
+    while ((currentYear < billingYear.endYear || (currentYear === billingYear.endYear && currentMonth <= billingYear.endMonth)) && count < 24) {
+      monthsInYear.push({ month: currentMonth, year: currentYear });
+      currentMonth++;
+      if (currentMonth > 12) {
+        currentMonth = 1;
+        currentYear++;
+      }
+      count++;
+    }
+
+    let htmlContent = `<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="UTF-8">
+  <title>Annual Ledger PDF</title>
+  <style>
+    @page { size: A4 landscape; margin: 10mm; }
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; color: #222; padding: 0; background: #fff; }
+    .card { width: 100%; min-height: 180mm; padding: 5mm; page-break-after: always; border: 2.5px solid #b91c1c; border-radius: 10px; position: relative; background: #fff; display: flex; flex-direction: column; margin-bottom: 10mm; }
+    .card:last-child { page-break-after: auto; margin-bottom: 0; }
+    .header { text-align: center; margin-bottom: 12px; }
+    .header h1 { font-size: 20px; font-weight: 800; color: #b91c1c; margin-bottom: 3px; }
+    .header h2 { font-size: 15px; font-weight: 700; color: #b91c1c; margin-bottom: 6px; }
+    .header .year-badge { font-size: 17px; font-weight: 800; color: #b91c1c; border: 2px solid #b91c1c; padding: 2px 15px; border-radius: 6px; display: inline-block; }
+    .family-info { display: flex; justify-content: space-between; margin: 12px 0 8px 0; font-size: 14px; font-weight: 700; color: #b91c1c; }
+    .family-leader-text { border-bottom: 1px dotted #b91c1c; padding: 0 5px; min-width: 150px; display: inline-block; }
+    table { width: 100%; border-collapse: collapse; margin-top: 5px; font-size: 11.5px; border: 1.5px solid #b91c1c; }
+    th { background: #fef2f2; color: #b91c1c; padding: 8px 2px; text-align: center; font-weight: 800; border: 1px solid #b91c1c; }
+    td { border: 1px solid #b91c1c; padding: 8px 2px; color: #000; font-weight: 600; }
+    .vertical-total { background: #fef2f2; font-weight: 800; color: #b91c1c; }
+    .footer-note { margin-top: auto; padding-top: 10px; font-size: 11.5px; color: #b91c1c; font-weight: 700; line-height: 1.4; }
+    @media print { 
+      body { -webkit-print-color-adjust: exact; print-color-adjust: exact; } 
+      .card { margin-bottom: 0; border-width: 3px; }
+    }
+  </style>
+</head>
+<body>`;
+
+    filteredFamilies.forEach(family => {
+      const familyLeader = family.members[0]?.name || '...................................';
+      
+      let monthHeaders = '';
+      monthsInYear.forEach(m => {
+        monthHeaders += `<th style="width: 5.8%;">${tamilMonths[m.month]}</th>`;
+      });
+
+      let tableRows = '';
+      const verticalTotals = Array(monthsInYear.length).fill(0);
+      let grandTotal = 0;
+
+      // Ensure at least 10 rows
+      const rowCount = 10;
+      
+      for (let i = 0; i < rowCount; i++) {
+        const member = family.members[i];
+        let memberTotal = 0;
+        let monthCells = '';
+        
+        if (member) {
+          monthsInYear.forEach((m, cIdx) => {
+            const monthAmount = member.payments
+              .filter(p => p.month === m.month)
+              .reduce((acc, p) => acc + p.amount, 0);
+            
+            memberTotal += monthAmount;
+            verticalTotals[cIdx] += monthAmount;
+            
+            monthCells += `<td style="text-align: center;">${monthAmount > 0 ? monthAmount : ''}</td>`;
+          });
+          
+          grandTotal += memberTotal;
+          
+          tableRows += `<tr>
+            <td style="text-align: center; width: 40px;">${i + 1}.</td>
+            <td style="padding-left: 8px; font-weight: 700;">${member.name}</td>
+            ${monthCells}
+            <td style="text-align: right; font-weight: 800; padding-right: 8px;">${memberTotal > 0 ? memberTotal : ''}</td>
+          </tr>`;
+        } else {
+          monthsInYear.forEach(() => {
+            monthCells += `<td></td>`;
+          });
+          tableRows += `<tr>
+            <td style="text-align: center;">${i + 1}.</td>
+            <td></td>
+            ${monthCells}
+            <td></td>
+          </tr>`;
+        }
+      }
+
+      let verticalTotalsHtml = '';
+      verticalTotals.forEach(total => {
+        verticalTotalsHtml += `<td style="text-align: center; font-weight: 800;">${total > 0 ? total : ''}</td>`;
+      });
+
+      htmlContent += `<div class="card">
+        <div class="header">
+          <h1>C.S.I. தூத்துக்குடி - நாசரேத் திருமண்டலம்-ராஜகோபால் நகர் சேகரம்</h1>
+          <h2>தூய திரித்துவ ஆலயம் - பண்டாரம்பட்டி</h2>
+          <div class="year-badge">மாதாந்திர சங்கக் காணிக்கை ${billingYear.startYear}-${billingYear.endYear}</div>
+        </div>
+        <div class="family-info">
+          <div>குடும்பத் தலைவர் பெயர்: <span class="family-leader-text">${familyLeader}</span></div>
+          <div>வரிசை எண்: ....................</div>
+          <div>முகவரி: <span class="family-leader-text">பண்டாரம்பட்டி</span></div>
+        </div>
+        <table>
+          <thead>
+            <tr>
+              <th style="width: 40px;">எண்.</th>
+              <th style="text-align: left; padding-left: 8px;">பெயர்</th>
+              ${monthHeaders}
+              <th style="width: 8%;">மொத்தம்</th>
+            </tr>
+          </thead>
+          <tbody>
+            ${tableRows}
+            <tr class="vertical-total">
+              <td colspan="2" style="text-align: right; padding-right: 12px;">மொத்தம்</td>
+              ${verticalTotalsHtml}
+              <td style="text-align: right; padding-right: 8px;">${grandTotal > 0 ? grandTotal : ''}</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>`;
+    });
+
+    htmlContent += `</body></html>`;
+
+    printWindow.document.write(htmlContent);
+    printWindow.document.close();
+    printWindow.onload = () => {
+      printWindow.print();
+    };
+  }
 
   function exportPDF() {
     const printWindow = window.open('', '_blank');
@@ -173,20 +333,22 @@ export default function PaymentRecordsTable({ families, billingYear }: Props) {
     const filterText = filterParts.length > 0 ? filterParts.join(' | ') : defaultFilterText;
 
     // Build table rows
-    let tableRows = '';
+    let tableRowsHtml = '';
     let sno = 1;
-    filteredFamilies.forEach((family) => {
+    let totalPaidInView = 0;
 
+    filteredFamilies.forEach((family) => {
       // Family header row
       const colspanFamily = selectedMonth !== 0 ? '4' : '3';
-      tableRows += `<tr class="family-row">
-        <td colspan="${colspanFamily}" style="font-weight:700; background:#f3f0ff; padding:8px 12px; font-size:13px;">
+      tableRowsHtml += `<tr style="background:#f3f0ff;">
+        <td colspan="${colspanFamily}" style="font-weight:700; padding:8px 12px; font-size:13px; border-bottom: 1px solid #ddd;">
          குடும்ப எண்: ${family.familyName || 'Unnamed'}
         </td>
       </tr>`;
 
       family.members.forEach((member) => {
         const memberTotal = memberYearTotals[member.id] || 0;
+        totalPaidInView += memberTotal;
         const paymentsList = member.payments.length > 0
           ? member.payments.map((p) => {
               let pYear = '';
@@ -201,7 +363,7 @@ export default function PaymentRecordsTable({ families, billingYear }: Props) {
           ? `<td style="padding:6px 12px; border-bottom:1px solid #e5e5e5; font-size:12px;">${paymentsList}</td>`
           : '';
 
-        tableRows += `<tr>
+        tableRowsHtml += `<tr>
           <td style="padding:6px 12px; border-bottom:1px solid #e5e5e5; text-align:center; font-size:12px;">${sno++}</td>
           <td style="padding:6px 12px; border-bottom:1px solid #e5e5e5; font-size:12px;">${member.name}</td>
           ${paymentsColumn}
@@ -223,19 +385,12 @@ export default function PaymentRecordsTable({ families, billingYear }: Props) {
     .header h1 { font-size: 22px; font-weight: 800; margin-bottom: 4px; }
     .header h2 { font-size: 15px; font-weight: 600; color: #555; margin-bottom: 10px; }
     .filter-info { text-align: center; font-size: 12px; color: #666; background: #f8f8f8; padding: 6px 12px; border-radius: 6px; display: inline-block; }
-    .summary { display: flex; justify-content: space-between; margin: 15px 0; font-size: 13px; padding: 10px 15px; background: #f3f0ff; border-radius: 8px; }
-    .summary span { font-weight: 700; }
     table { width: 100%; border-collapse: collapse; margin-top: 10px; }
-    thead th { background: #333; color: white; padding: 8px 12px; font-size: 11px; text-transform: uppercase; letter-spacing: 0.5px; text-align: left; }
+    thead th { background: #333; color: white; padding: 8px 12px; font-size: 11px; text-transform: uppercase; text-align: left; }
     thead th:first-child { text-align: center; width: 40px; }
     thead th:last-child { text-align: right; }
-    .family-row td { border-top: 2px solid #ddd; }
-    tfoot td { padding: 10px 12px; font-weight: 700; font-size: 13px; }
-    .month-total td { background: #6c5ce7; color: white; }
-    .year-total td { background: #333; color: white; }
-    tfoot { display: table-row-group; }
-    thead { display: table-header-group; }
-    @media print { body { -webkit-print-color-adjust: exact; print-color-adjust: exact; } tfoot { display: table-row-group; } }
+    tfoot td { padding: 10px 12px; font-weight: 700; font-size: 13px; background: #333; color: white; }
+    @media print { body { -webkit-print-color-adjust: exact; print-color-adjust: exact; } }
   </style>
 </head>
 <body>
@@ -243,12 +398,6 @@ export default function PaymentRecordsTable({ families, billingYear }: Props) {
     <h1>தூய திரித்துவ ஆலயம், பண்டாரம்பட்டி</h1>
     <h2>சங்கம் செலுத்திய விபரம்</h2>
     <div class="filter-info">${filterText}</div>
-  </div>
-
-  <div class="summary">
-    <div>குடும்பங்கள்: <span>${filteredFamilies.length}</span></div>
-    <div>உறுப்பினர்கள்: <span>${totalMembersShown}</span></div>
-    <div>மொத்த வரவு: <span style="color:#00875a;">₹${grandTotal.toLocaleString()}</span></div>
   </div>
 
   <table>
@@ -260,30 +409,12 @@ export default function PaymentRecordsTable({ families, billingYear }: Props) {
         <th style="text-align:right;">மொத்தம்</th>
       </tr>
     </thead>
-    <tbody>${tableRows}</tbody>
+    <tbody>${tableRowsHtml}</tbody>
     <tfoot>
-      ${selectedMonth !== 0 ? (() => {
-        // Calculate month-specific total
-        let monthTotal = 0;
-        filteredFamilies.forEach((f) => {
-          f.members.forEach((m) => {
-            m.payments.forEach((p) => {
-              monthTotal += p.amount;
-            });
-          });
-        });
-        return `<tr class="month-total">
-          <td colspan="3" style="text-align:right; padding-right:12px;">${tamilMonths[selectedMonth]} மொத்தம்</td>
-          <td style="text-align:right;">₹${monthTotal.toLocaleString()}</td>
-        </tr>
-        <tr class="year-total">
-          <td colspan="3" style="text-align:right; padding-right:12px;">ஆண்டு மொத்த வரவு</td>
-          <td style="text-align:right;">₹${grandTotal.toLocaleString()}</td>
-        </tr>`;
-      })() : `<tr class="year-total">
-        <td colspan="2" style="text-align:right; padding-right:12px;">மொத்த வரவு</td>
-        <td style="text-align:right;">₹${grandTotal.toLocaleString()}</td>
-      </tr>`}
+      <tr>
+        <td colspan="${selectedMonth !== 0 ? '3' : '2'}" style="text-align:right; padding-right:12px;">மொத்த வரவு</td>
+        <td style="text-align:right;">₹${totalPaidInView.toLocaleString()}</td>
+      </tr>
     </tfoot>
   </table>
 </body>
@@ -294,6 +425,55 @@ export default function PaymentRecordsTable({ families, billingYear }: Props) {
     printWindow.onload = () => {
       printWindow.print();
     };
+  }
+
+  // Drag and drop handlers
+  function handleDragStart(e: React.DragEvent, memberId: string, familyId: string) {
+    setDraggedMember({ memberId, familyId });
+    e.dataTransfer.setData('text/plain', memberId);
+    e.dataTransfer.effectAllowed = 'move';
+  }
+
+  function handleDragOver(e: React.DragEvent) {
+    e.preventDefault();
+    e.dataTransfer.dropEffect = 'move';
+  }
+
+  async function handleDrop(e: React.DragEvent, targetMemberId: string, familyId: string) {
+    e.preventDefault();
+    if (!draggedMember || draggedMember.familyId !== familyId) return;
+    
+    const family = localFamilies.find(f => f.id === familyId);
+    if (!family) return;
+
+    const draggedIndex = family.members.findIndex(m => m.id === draggedMember.memberId);
+    const targetIndex = family.members.findIndex(m => m.id === targetMemberId);
+
+    if (draggedIndex === targetIndex) return;
+
+    // Optimistic Update
+    const newFamilies = localFamilies.map(f => {
+      if (f.id === familyId) {
+        const newMembers = [...f.members];
+        const [movedMember] = newMembers.splice(draggedIndex, 1);
+        newMembers.splice(targetIndex, 0, movedMember);
+        return { ...f, members: newMembers };
+      }
+      return f;
+    });
+    
+    setLocalFamilies(newFamilies);
+    setDraggedMember(null);
+    
+    try {
+      const familyToUpdate = newFamilies.find(f => f.id === familyId);
+      if (familyToUpdate) {
+        await updateMemberOrder(familyToUpdate.members.map(m => m.id), familyId);
+      }
+    } catch {
+      toast.error('Failed to sync order with database');
+      setLocalFamilies(families); // Rollback
+    }
   }
 
   if (families.length === 0 || families.every((f) => f.members.length === 0)) {
@@ -309,6 +489,8 @@ export default function PaymentRecordsTable({ families, billingYear }: Props) {
       </div>
     );
   }
+
+  const selectedMonthLabel = monthFilters.find((m) => m.value === selectedMonth)?.label || 'All Months';
 
   return (
     <div className="space-y-4">
@@ -395,7 +577,7 @@ export default function PaymentRecordsTable({ families, billingYear }: Props) {
           </button>
         )}
 
-        {/* Export PDF button */}
+        {/* Export Monthly PDF button */}
         <button
           type="button"
           onClick={exportPDF}
@@ -405,8 +587,23 @@ export default function PaymentRecordsTable({ families, billingYear }: Props) {
           <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
           </svg>
-          Export PDF
+          Monthly PDF
         </button>
+        
+        {/* Export Annual PDF button */}
+        {billingYear && (
+          <button
+            type="button"
+            onClick={exportAnnualLedgerPDF}
+            className="flex items-center gap-2 px-4 py-2 rounded-xl text-sm font-medium transition-all duration-200 border
+                       bg-[#6c5ce7]/10 text-[#a29bfe] border-[#6c5ce7]/30 hover:bg-[#6c5ce7]/20"
+          >
+            <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+            </svg>
+            Annual Ledger PDF
+          </button>
+        )}
       </div>
 
       {/* Summary bar */}
@@ -497,9 +694,24 @@ export default function PaymentRecordsTable({ families, billingYear }: Props) {
                     const memberTotal = memberYearTotals[member.id] || 0;
 
                     return (
-                      <tr key={member.id} className="border-b border-[#2a2a40]/50 hover:bg-[#1f1f35]/30 transition-colors">
+                      <tr 
+                        key={member.id} 
+                        draggable={true}
+                        onDragStart={(e) => handleDragStart(e, member.id, family.id)}
+                        onDragOver={handleDragOver}
+                        onDrop={(e) => handleDrop(e, member.id, family.id)}
+                        className={`border-b border-[#2a2a40]/50 hover:bg-[#1f1f35]/30 transition-colors cursor-move
+                          ${draggedMember?.memberId === member.id ? 'opacity-50 grayscale scale-[0.98]' : ''}`}
+                      >
                         <td className="px-5 py-3">
-                          <p className="text-sm font-medium text-white">{member.name}</p>
+                          <div className="flex items-center gap-2">
+                            <div className="flex flex-col gap-0.5 cursor-grab active:cursor-grabbing">
+                              <div className="w-3 h-0.5 bg-[#444460] rounded-full"></div>
+                              <div className="w-3 h-0.5 bg-[#444460] rounded-full"></div>
+                              <div className="w-3 h-0.5 bg-[#444460] rounded-full"></div>
+                            </div>
+                            <p className="text-sm font-medium text-white">{member.name}</p>
+                          </div>
                         </td>
                         <td className="px-5 py-3">
                           <p className="text-xs text-[#8888a0]">{member.mobile}</p>
